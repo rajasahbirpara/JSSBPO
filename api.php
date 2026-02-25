@@ -19,8 +19,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 header('Content-Type: application/json');
 
-session_start();
-include 'config.php';
+require_once 'config.php';
 include 'whatsapp_helper.php';
 ob_clean();
 
