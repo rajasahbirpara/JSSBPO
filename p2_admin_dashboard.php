@@ -1332,11 +1332,7 @@ if ($active_tab == 'missing_images') {
     $total_missing = $missing_result ? $missing_result->num_rows : 0;
 }
 if ($active_tab == 'submissions') {
-    if (!isset($_GET['filter_date']) || empty($_GET['filter_date'])) {
-        $filter_date = date('Y-m-d');
-    } else {
-        $filter_date = clean_input_secure($_GET['filter_date']);
-    }
+    $filter_date = isset($_GET['filter_date']) ? clean_input_secure($_GET['filter_date']) : '';
     $filter_deo_id_sub = isset($_GET['filter_deo_id_sub']) ? clean_input_secure($_GET['filter_deo_id_sub']) : '';
     $filter_conditions = ["1=1"];
     if (!empty($filter_date)) $filter_conditions[] = "DATE(wl.log_time) = '{$filter_date}'";
