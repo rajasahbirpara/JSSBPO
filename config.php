@@ -29,9 +29,30 @@ if ($_SERVER['SERVER_NAME'] === 'localhost' || $_SERVER['SERVER_NAME'] === '127.
 // SESSION CONFIGURATION
 // ============================================================
 if (session_status() === PHP_SESSION_NONE) {
+    // Ensure session save path exists and is writable
+    $session_path = ini_get('session.save_path') ?: sys_get_temp_dir();
+    if (!is_writable($session_path)) {
+        $fallback_path = __DIR__ . '/sessions';
+        if (!is_dir($fallback_path)) {
+            @mkdir($fallback_path, 0700, true);
+        }
+        if (is_writable($fallback_path)) {
+            ini_set('session.save_path', $fallback_path);
+        }
+    }
+    
     ini_set('session.cookie_httponly', 1);
     ini_set('session.use_only_cookies', 1);
-    ini_set('session.cookie_samesite', 'Strict');
+    ini_set('session.cookie_samesite', 'Lax');
+    
+    // Auto-detect HTTPS (works behind Nginx proxy too)
+    $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+                || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+                || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+    if ($is_https) {
+        ini_set('session.cookie_secure', 1);
+    }
+    
     session_start();
 }
 
