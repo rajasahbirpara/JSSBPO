@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once 'config.php';
 
 // Session Check - Only QC users can access
