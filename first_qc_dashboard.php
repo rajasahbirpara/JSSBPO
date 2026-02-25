@@ -1,10 +1,8 @@
 <?php
-session_start();
 require_once 'config.php';
 
-// Session Check - Only admin, supervisor, qc can access First QC
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || 
-    !in_array($_SESSION['role'], ['admin', 'supervisor', 'qc'])) {
+// Session Check - All valid roles can access First QC
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
     header("Location: login.php");
     exit();
 }
