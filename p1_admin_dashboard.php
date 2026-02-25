@@ -340,6 +340,8 @@ if ($_SESSION['role'] !== 'admin') {
                 </div>
             </div>
             <div class="header-right">
+                <!-- TV Dashboard Button -->
+                <button class="btn btn-sm btn-warning" onclick="openTVDashboard()" title="Open TV Dashboard" style="font-weight:600;">📺 TV Dashboard</button>
                 <!-- QC Toggle -->
                 <div class="form-check form-switch me-2" style="display:flex; align-items:center; gap:5px;">
                     <input class="form-check-input" type="checkbox" id="qcToggle" onchange="toggleQCSystem()" style="cursor:pointer; width:40px; height:20px;">
@@ -2322,6 +2324,19 @@ if ($_SESSION['role'] !== 'admin') {
     
     function logout() { $.post('api.php', {action:'logout'}, ()=>location.reload()); }
     function toggleTheme(){ document.body.classList.toggle('dark-mode'); localStorage.setItem('theme',document.body.classList.contains('dark-mode')?'dark':'light'); }
+
+    // --- TV DASHBOARD ---
+    function openTVDashboard() {
+        $.post('api.php', {action: 'get_security_settings'}, function(res) {
+            let token = 'JSSTV2025';
+            if (res && res.status === 'success' && res.data && res.data.tv_dashboard_token) {
+                token = res.data.tv_dashboard_token;
+            }
+            window.open('tv_dashboard.php?token=' + encodeURIComponent(token), '_blank');
+        }, 'json').fail(function() {
+            window.open('tv_dashboard.php?token=JSSTV2025', '_blank');
+        });
+    }
 
     // --- HEARTBEAT (Track Online Status) ---
     function sendHeartbeat() {
