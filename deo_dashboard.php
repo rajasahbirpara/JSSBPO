@@ -232,16 +232,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_progress'])) {
             if ($dup_result->num_rows > 0) {
                 $error_msg = "⚠️ Duplicate: Range **$record_from - $record_to** already submitted.";
             } else {
-                $values = [];
-                for ($i = (int)$record_from; $i <= (int)$record_to; $i++) {
-                    $safe_rec = $conn->real_escape_string($i);
-                    $values[] = "('$safe_rec', '{$user['id']}', 'completed', NOW())";
-                }
+                $record_from_int = (int)$record_from;
+                $record_to_int = (int)$record_to;
+                $count = $record_to_int - $record_from_int + 1;
                 
-                if (!empty($values)) {
+                if ($count > 0) {
                     // Update existing records in client_records table
                     $rec_nos = [];
-                    for ($i = (int)$record_from; $i <= (int)$record_to; $i++) {
+                    for ($i = $record_from_int; $i <= $record_to_int; $i++) {
                         $rec_nos[] = "'" . $conn->real_escape_string($i) . "'";
                     }
                     $chunks = array_chunk($rec_nos, 500);
@@ -256,7 +254,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_progress'])) {
                         $conn->query($sql);
                     }
                     
-                    $count = (int)$record_to - (int)$record_from + 1;
                     $success = "✅ Success! Range $record_from - $record_to ($count records) completed.";
                     
                     $log_stmt = $conn->prepare("INSERT INTO work_logs (deo_id, record_from, record_to, record_count) VALUES (?, ?, ?, ?)");
@@ -510,6 +507,9 @@ GROUP BY DATE(log_time)
 ORDER BY submission_date DESC 
 LIMIT 30";
 $logs_result = $conn->query($logs_query);
+if (!$logs_result) {
+    $logs_result = null; // Prevent fatal error on ->num_rows
+}
 
 // Total Assigned - Count from client_records
 $total_assigned_sql = "SELECT COUNT(*) as count FROM client_records WHERE (assigned_to = '{$user['username']}' OR assigned_to_id = {$user['id']})";
@@ -869,7 +869,7 @@ $unread_notifs = $conn->query("SELECT COUNT(*) as count FROM notifications WHERE
             <div class="card">
                 <h2>🕒 Recent Submissions</h2>
                 <div class="scroll-box">
-                    <?php if ($logs_result->num_rows > 0): ?>
+                    <?php if ($logs_result && $logs_result->num_rows > 0): ?>
                         <?php while ($log = $logs_result->fetch_assoc()): ?>
                             <div class="log-item" style="border-left: 4px solid #3b82f6; padding-left: 12px;">
                                 <div style="flex:1;">
